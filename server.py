@@ -12,8 +12,9 @@ STATIC_DIR = "dist"
 
 def init_db():
     """Initializes the SQLite database and calculations ledger table."""
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(DB_FILE, timeout=30.0)
     cursor = conn.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS calculations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +28,7 @@ def init_db():
     """)
     conn.commit()
     conn.close()
-    print(f"📁 SQLite database '{DB_FILE}' initialized successfully.")
+    print(f"📁 SQLite database '{DB_FILE}' initialized successfully in WAL mode.")
 
 class EcosphereAPIHandler(BaseHTTPRequestHandler):
     def end_headers(self):
@@ -73,7 +74,7 @@ class EcosphereAPIHandler(BaseHTTPRequestHandler):
     def handle_get_history(self):
         """Retrieves and returns all ledger entries from SQLite database."""
         try:
-            conn = sqlite3.connect(DB_FILE)
+            conn = sqlite3.connect(DB_FILE, timeout=30.0)
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM calculations ORDER BY timestamp DESC")
@@ -117,7 +118,7 @@ class EcosphereAPIHandler(BaseHTTPRequestHandler):
 
             timestamp = datetime.now().isoformat()
             
-            conn = sqlite3.connect(DB_FILE)
+            conn = sqlite3.connect(DB_FILE, timeout=30.0)
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO calculations (timestamp, transport, energy, diet, waste, total)
@@ -153,7 +154,7 @@ class EcosphereAPIHandler(BaseHTTPRequestHandler):
                 self.send_error(400, "Missing entry ID parameter")
                 return
                 
-            conn = sqlite3.connect(DB_FILE)
+            conn = sqlite3.connect(DB_FILE, timeout=30.0)
             cursor = conn.cursor()
             cursor.execute("DELETE FROM calculations WHERE id = ?", (entry_id,))
             conn.commit()
@@ -188,7 +189,11 @@ class EcosphereAPIHandler(BaseHTTPRequestHandler):
 
         # Determine MIME Type
         mime_type, _ = mimetypes.guess_type(file_path)
-        if not mime_type:
+        if file_path.endswith('.js'):
+            mime_type = 'application/javascript'
+        elif file_path.endswith('.css'):
+            mime_type = 'text/css'
+        elif not mime_type:
             mime_type = 'application/octet-stream'
 
         try:

@@ -58,8 +58,9 @@ EMISSION_FACTORS = {
 
 # Database Initialization
 def init_db():
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(DB_FILE, timeout=30.0)
     cursor = conn.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS calculations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,7 +77,7 @@ def init_db():
 
 # Database Functions
 def save_calculation(transport, energy, diet, waste, total):
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(DB_FILE, timeout=30.0)
     cursor = conn.cursor()
     timestamp = datetime.now().isoformat()
     cursor.execute("""
@@ -87,7 +88,7 @@ def save_calculation(transport, energy, diet, waste, total):
     conn.close()
 
 def get_history():
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(DB_FILE, timeout=30.0)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM calculations ORDER BY timestamp DESC")
@@ -97,7 +98,7 @@ def get_history():
     return history
 
 def delete_entry(entry_id):
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(DB_FILE, timeout=30.0)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM calculations WHERE id = ?", (entry_id,))
     conn.commit()
