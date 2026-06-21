@@ -114,6 +114,7 @@ def inject_custom_styles(theme_mode):
         text_dim = "#94A3B8"
         accent_color = "#10B981"
         st_card = "#121A21"
+        hover_bg = "#1E293B"
     else:
         bg_color = "#F8FAFC"
         card_bg = "#FFFFFF"
@@ -122,6 +123,7 @@ def inject_custom_styles(theme_mode):
         text_dim = "#64748B"
         accent_color = "#059669"
         st_card = "#FFFFFF"
+        hover_bg = "#F1F5F9"
 
     css = f"""
     <style>
@@ -130,7 +132,7 @@ def inject_custom_styles(theme_mode):
         background-color: {bg_color} !important;
         color: {text_color} !important;
     }}
-    h1, h2, h3, h4, p, span, label, div {{
+    h1, h2, h3, h4, p, span, label {{
         color: {text_color} !important;
     }}
     .stHeader {{
@@ -147,12 +149,56 @@ def inject_custom_styles(theme_mode):
         margin-bottom: 1rem !important;
     }}
     
-    /* Styled Input Boxes */
-    input, select, textarea, div[role="combobox"] {{
+    /* Styled Input Boxes & Selectboxes */
+    input, select, textarea, div[role="combobox"], div[data-baseweb="select"] {{
         background-color: {st_card} !important;
         border: 1px solid {card_border} !important;
         color: {text_color} !important;
         border-radius: 0.375rem !important;
+    }}
+    div[data-baseweb="select"] * {{
+        color: {text_color} !important;
+    }}
+    
+    /* Dropdown menu container & option items styling override */
+    div[data-baseweb="popover"] ul, div[data-baseweb="menu"], div[role="listbox"] {{
+        background-color: {st_card} !important;
+        border: 1px solid {card_border} !important;
+    }}
+    div[data-baseweb="popover"] li, div[data-baseweb="popover"] div[role="option"], ul[role="listbox"] li {{
+        background-color: {st_card} !important;
+        color: {text_color} !important;
+    }}
+    div[data-baseweb="popover"] li:hover, div[data-baseweb="popover"] div[role="option"]:hover, ul[role="listbox"] li:hover {{
+        background-color: {hover_bg} !important;
+        color: {accent_color} !important;
+    }}
+    
+    /* Buttons Custom Theme overrides */
+    button[data-testid="stBaseButton-primary"] {{
+        background-color: {accent_color} !important;
+        color: #FFFFFF !important;
+        border: 1px solid {accent_color} !important;
+        border-radius: 0.375rem !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease-in-out !important;
+    }}
+    button[data-testid="stBaseButton-primary"]:hover {{
+        background-color: {"#047857" if theme_mode == "Light" else "#059669"} !important;
+        border-color: {"#047857" if theme_mode == "Light" else "#059669"} !important;
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2) !important;
+    }}
+    
+    button[data-testid="stBaseButton-secondary"] {{
+        background-color: transparent !important;
+        color: {text_color} !important;
+        border: 1px solid {card_border} !important;
+        border-radius: 0.375rem !important;
+        transition: all 0.2s ease-in-out !important;
+    }}
+    button[data-testid="stBaseButton-secondary"]:hover {{
+        border-color: {accent_color} !important;
+        color: {accent_color} !important;
     }}
     
     /* Helper styling */
@@ -181,14 +227,18 @@ def inject_custom_styles(theme_mode):
 # Main Application Initialization
 init_db()
 
+# Initialize session state for theme
+if "theme" not in st.session_state:
+    st.session_state.theme = "Light"
+
 # Sidebar controls
 with st.sidebar:
     st.markdown("### Settings")
-    theme = st.selectbox("Theme Mode", ["Light", "Dark"], index=0)
-    if st.button("Reset Estimator"):
+    if st.button("Reset Estimator", use_container_width=True):
         st.rerun()
 
 # Apply the theme styling
+theme = st.session_state.theme
 inject_custom_styles(theme)
 
 if theme == "Dark":
@@ -201,7 +251,7 @@ else:
     text_color = "#0F172A"
 
 # Header Section
-col_logo, col_title = st.columns([1, 15])
+col_logo, col_title, col_toggle = st.columns([1, 11, 4])
 with col_logo:
     st.markdown(
         f'<div style="background: rgba(5,150,105,0.1); border: 1px solid rgba(5,150,105,0.25); border-radius: 6px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #059669; font-size: 18px;">🌱</div>',
@@ -212,6 +262,16 @@ with col_title:
         f'<h1 style="font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; padding-top: 4px;">CarbonPulse</h1>',
         unsafe_allow_html=True
     )
+with col_toggle:
+    # Header theme toggle button
+    if st.session_state.theme == "Light":
+        if st.button("🌙 Dark Mode", key="theme_toggle_btn", use_container_width=True, type="primary"):
+            st.session_state.theme = "Dark"
+            st.rerun()
+    else:
+        if st.button("☀️ Light Mode", key="theme_toggle_btn", use_container_width=True, type="primary"):
+            st.session_state.theme = "Light"
+            st.rerun()
 
 st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
 
@@ -580,7 +640,7 @@ with col_right:
 
             # Save Button
             st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-            if st.button("Commit to History Ledger", use_container_width=True, key="save_btn"):
+            if st.button("Commit to History Ledger", use_container_width=True, key="save_btn", type="primary"):
                 if raw_total > 0:
                     # Save the simulated total projected values to history DB
                     save_calculation(sim_trans, sim_energ, sim_diet, sim_waste, projected_total)

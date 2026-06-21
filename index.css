@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Outfit', sans-serif;
+  
+  /* Primary Accent: Emerald/Forest Green */
+  --color-accent-green: #059669;
+  --color-accent-green-glow: rgba(5, 150, 105, 0.05);
+  --color-accent-green-hover: #047857;
+  
+  /* Theme Palette variables mapped to CSS custom variables */
+  --color-bg-light: var(--bg-light);
+  --color-bg-card: var(--bg-card);
+  --color-bg-card-border: var(--bg-card-border);
+  --color-bg-card-hover: var(--bg-card-hover);
+  --color-text-dim: var(--text-dim);
+  --color-text-dark: var(--text-dark);
+}
+
+:root {
+  --bg-light: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-card-border: #E2E8F0;
+  --bg-card-hover: #F1F5F9;
+  --text-dim: #64748B;
+  --text-dark: #0F172A;
+}
+
+.dark {
+  --bg-light: #090D10;
+  --bg-card: #121A21;
+  --bg-card-border: rgba(255, 255, 255, 0.05);
+  --bg-card-hover: #1E293B;
+  --text-dim: #94A3B8;
+  --text-dark: #F8FAFC;
+}
+
+/* Base custom styles */
+@layer base {
+  body {
+    background-color: var(--color-bg-light);
+    color: var(--color-text-dark);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-light);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-bg-card-border);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent-green);
+  }
+}
+
+/* Light Card Panel styling */
+.glass-panel {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-bg-card-border);
+  box-shadow: 0 4px 18px 0 rgba(0, 0, 0, 0.03);
+  border-radius: 0.75rem;
+  transition: all 0.25s ease-in-out;
+}
+
+.glass-panel:hover {
+  background: var(--color-bg-card);
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.06);
+}
+
+.glow-text {
+  text-shadow: 0 0 10px rgba(5, 150, 105, 0.15);
+}
+
+.glow-btn {
+  position: relative;
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+.glow-btn:hover {
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+}
+
+/* Sparkline target line styling */
+.sparkline-line {
+  filter: drop-shadow(0px 1px 3px rgba(5, 150, 105, 0.15));
+}
